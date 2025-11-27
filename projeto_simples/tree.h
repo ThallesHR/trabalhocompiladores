@@ -4,8 +4,8 @@
 | Trabalho . . : Construcao Arvore Sintatica e Geracao de Codigo
 | Disciplina : Teoria de Linguagens e Compiladores
 | Professor . : Luiz Eduardo da Silva
-| Aluno . . . . . : Fulano da Silva
-| Data . . . . . . : 99/99/9999
+| Aluno . . . . . : Thalles Henrique Gonzaga Rosa Pereira
+| Data . . . . . . : 20/11/2025
 +=============================================================*/
 
 #ifndef TREE_H

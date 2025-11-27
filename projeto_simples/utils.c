@@ -9,7 +9,6 @@
 +=============================================================*/
 #include <stdio.h>
 
-// A definição da função serve como protótipo para este arquivo
 void erro(const char *msg){
   printf("Erro: %s\n", msg);
 }

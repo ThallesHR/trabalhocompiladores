@@ -11,35 +11,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "tree.h"
+
 ptno raiz;
 
-
+// Funcoes externas (sem precisar de utils.h)
 extern int yylex();
 extern void erro(const char *msg); 
 void yyerror(const char *s);
 %}
 
+/* ======================
+      TIPOS DO BISON
+  ====================== */
 
+/* use o tipo real do struct ao inves de ptno */
 %union {
     int val;
     char *str;
     struct no *no;
 }
 
-
+/* TOKENS */
 %token PROGRAMA INICIO FIM INTEIRO LEIA ESCREVA
 %token <val> NUM
 %token <str> ID
 
-
+/* NAO TERMINAIS */
 %type <no> programa comandos comando expr termo fator
 
-
+/* Precedencia */
 %left '+' '-'
 %left '*' '/'
 
 %%
 
+/* ======================
+          GRAMATICA
+  ====================== */
 
 programa:
     PROGRAMA ID INICIO comandos FIM {
@@ -51,13 +59,13 @@ programa:
     }
 ;
 
-
+/* lista de comandos */
 comandos:
-            { $$ = criaNo(N_LISTA, 0); }
+      /* vazio */       { $$ = criaNo(N_LISTA, 0); }
     | comandos comando  { adicionaFilho($1, $2); $$ = $1; }
 ;
 
-
+/* comandos individuais */
 comando:
       ID '=' expr ';' {
             ptno n = criaNo(N_ATR, 0);
@@ -77,6 +85,7 @@ comando:
       }
 ;
 
+/* EXPRESÕES */
 expr:
       expr '+' termo {
             ptno n = criaNo(N_PLUS, 0);
@@ -123,6 +132,9 @@ fator:
 
 %%
 
+/* ======================
+      FUNCAO DE ERRO
+  ====================== */
 
 void yyerror(const char *s) {
     fprintf(stderr, "Erro sintatico: %s\n", s);

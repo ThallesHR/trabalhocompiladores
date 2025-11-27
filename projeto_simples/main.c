@@ -13,6 +13,7 @@
 #include "tree.h"
 
 
+// DECLARAÇÃO EXTERNA: SEM utils.h
 extern void erro(const char *msg); 
 
 
@@ -41,10 +42,10 @@ void get_base_name(const char *full_path, char *base_name) {
 int main(int argc, char **argv)
 {
     char nome_base[256];
-    char cmd_dot[512];
-    char saida_dot[256];
-    char saida_mvs[256];
-    char saida_svg[256];
+    char cmd_dot[640]; // CORRIGIDO: Aumentado para eliminar o warning de overflow.
+    char saida_dot[300]; 
+    char saida_mvs[300]; 
+    char saida_svg[300]; 
 
     if (argc < 2) {
         fprintf(stderr, "Uso: %s <arquivo_fonte.simples>\n", argv[0]);
@@ -59,9 +60,10 @@ int main(int argc, char **argv)
 
     get_base_name(argv[1], nome_base);
     
-    sprintf(saida_dot, "%s.dot", nome_base);
-    sprintf(saida_svg, "%s.svg", nome_base);
-    sprintf(saida_mvs, "%s.mvs", nome_base);
+    snprintf(saida_dot, sizeof(saida_dot), "%s.dot", nome_base);
+    snprintf(saida_svg, sizeof(saida_svg), "%s.svg", nome_base);
+    snprintf(saida_mvs, sizeof(saida_mvs), "%s.mvs", nome_base);
+
 
     if (yyparse() == 0) {
         printf("Analise sintatica concluida.\n");
@@ -69,6 +71,8 @@ int main(int argc, char **argv)
         geraDot(raiz, saida_dot);
         printf("Arquivo AST gerado: %s\n", saida_dot);
 
+        // O buffer é grande o suficiente, mas o sprintf é usado para maior compatibilidade.
+        // O warning foi resolvido aumentando o buffer cmd_dot[640].
         sprintf(cmd_dot, "dot -Tsvg %s -o %s", saida_dot, saida_svg);
         if (system(cmd_dot) == 0) {
             printf("Arquivo SVG gerado: %s\n", saida_svg);
