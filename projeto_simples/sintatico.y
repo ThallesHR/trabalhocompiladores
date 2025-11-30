@@ -14,58 +14,66 @@
 
 ptno raiz;
 
-// Funcoes externas (sem precisar de utils.h)
 extern int yylex();
 extern void erro(const char *msg); 
 void yyerror(const char *s);
 %}
 
-/* ======================
-      TIPOS DO BISON
-  ====================== */
-
-/* use o tipo real do struct ao inves de ptno */
 %union {
     int val;
     char *str;
     struct no *no;
 }
 
-/* TOKENS */
+/* --- TOKENS NOVOS ADICIONADOS AQUI --- */
 %token PROGRAMA INICIO FIM INTEIRO LEIA ESCREVA
+%token SE ENTAO SENAO FIMSE ENQUANTO FACA FIMENQUANTO
+%token MAIOR MENOR IGUAL DIFERENTE MAIG MENIG
 %token <val> NUM
 %token <str> ID
 
-/* NAO TERMINAIS */
-%type <no> programa comandos comando expr termo fator
+%type <no> programa declaracoes lista_vars comandos comando expr termo fator condicao
 
-/* Precedencia */
 %left '+' '-'
 %left '*' '/'
 
 %%
 
-/* ======================
-          GRAMATICA
-  ====================== */
+/* --- Regras da Gramática --- */
 
 programa:
-    PROGRAMA ID INICIO comandos FIM {
+    PROGRAMA ID declaracoes INICIO comandos FIM {
         ptno p = criaNo(N_PROGRAM, 0);
         adicionaFilho(p, criaNoStr(N_ID, $2));
-        adicionaFilho(p, $4);
+        adicionaFilho(p, $3); 
+        adicionaFilho(p, $5); 
         raiz = p;
         $$ = p;
     }
 ;
 
-/* lista de comandos */
+declaracoes:
+      /* vazio */ { $$ = NULL; }
+    | INTEIRO lista_vars { 
+        ptno n = criaNo(N_DECL_VAR, 0);
+        adicionaFilho(n, $2);
+        $$ = n;
+    }
+;
+
+lista_vars:
+      ID { $$ = criaNoStr(N_ID, $1); }
+    | lista_vars ID { 
+          adicionaFilho($1, criaNoStr(N_ID, $2)); 
+          $$ = $1; 
+      }
+;
+
 comandos:
       /* vazio */       { $$ = criaNo(N_LISTA, 0); }
     | comandos comando  { adicionaFilho($1, $2); $$ = $1; }
 ;
 
-/* comandos individuais */
 comando:
       ID '=' expr ';' {
             ptno n = criaNo(N_ATR, 0);
@@ -83,58 +91,57 @@ comando:
             adicionaFilho(n, $3);
             $$ = n;
       }
+    /* --- REGRAS DO SE e ENQUANTO QUE FALTAVAM --- */
+    | SE condicao ENTAO comandos FIMSE {
+            ptno n = criaNo(N_SE, 0);
+            adicionaFilho(n, $2);
+            adicionaFilho(n, $4);
+            $$ = n;
+    }
+    | SE condicao ENTAO comandos SENAO comandos FIMSE {
+            ptno n = criaNo(N_SE, 0);
+            adicionaFilho(n, $2);
+            adicionaFilho(n, $4);
+            adicionaFilho(n, $6);
+            $$ = n;
+    }
+    | ENQUANTO condicao FACA comandos FIMENQUANTO {
+            ptno n = criaNo(N_ENQUANTO, 0);
+            adicionaFilho(n, $2);
+            adicionaFilho(n, $4);
+            $$ = n;
+    }
 ;
 
-/* EXPRESÕES */
+condicao:
+      expr MAIOR expr     { ptno n = criaNo(N_MAIOR, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | expr MENOR expr     { ptno n = criaNo(N_MENOR, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | expr IGUAL expr     { ptno n = criaNo(N_IGUAL, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | expr DIFERENTE expr { ptno n = criaNo(N_DIF, 0);   adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | expr MAIG expr      { ptno n = criaNo(N_MAIG, 0);  adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | expr MENIG expr     { ptno n = criaNo(N_MENIG, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | '(' condicao ')'    { $$ = $2; }
+;
+
 expr:
-      expr '+' termo {
-            ptno n = criaNo(N_PLUS, 0);
-            adicionaFilho(n, $1);
-            adicionaFilho(n, $3);
-            $$ = n;
-      }
-    | expr '-' termo {
-            ptno n = criaNo(N_MINUS, 0);
-            adicionaFilho(n, $1);
-            adicionaFilho(n, $3);
-            $$ = n;
-      }
+      expr '+' termo { ptno n = criaNo(N_PLUS, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | expr '-' termo { ptno n = criaNo(N_MINUS, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
     | termo { $$ = $1; }
 ;
 
 termo:
-      termo '*' fator {
-            ptno n = criaNo(N_MUL, 0);
-            adicionaFilho(n, $1);
-            adicionaFilho(n, $3);
-            $$ = n;
-      }
-    | termo '/' fator {
-            ptno n = criaNo(N_DIV, 0);
-            adicionaFilho(n, $1);
-            adicionaFilho(n, $3);
-            $$ = n;
-      }
+      termo '*' fator { ptno n = criaNo(N_MUL, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
+    | termo '/' fator { ptno n = criaNo(N_DIV, 0); adicionaFilho(n, $1); adicionaFilho(n, $3); $$ = n; }
     | fator { $$ = $1; }
 ;
 
 fator:
-      NUM {
-            $$ = criaNo(N_NUM, $1);
-      }
-    | ID {
-            $$ = criaNoStr(N_ID, $1);
-      }
-    | '(' expr ')' {
-            $$ = $2;
-      }
+      NUM { $$ = criaNo(N_NUM, $1); }
+    | ID { $$ = criaNoStr(N_ID, $1); }
+    | '(' expr ')' { $$ = $2; }
 ;
 
 %%
-
-/* ======================
-      FUNCAO DE ERRO
-  ====================== */
 
 void yyerror(const char *s) {
     fprintf(stderr, "Erro sintatico: %s\n", s);

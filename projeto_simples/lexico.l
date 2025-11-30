@@ -8,7 +8,7 @@
 | Data . . . . . . : 20/11/2025
 +=============================================================*/
 %{
-#include "sintatico.tab.h"
+#include "sintatico.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,16 +22,25 @@
 "inteiro"       { return INTEIRO; }
 "leia"          { return LEIA; }
 "escreva"       { return ESCREVA; }
+"se"            { return SE; }
+"entao"         { return ENTAO; }
+"senao"         { return SENAO; }
+"fimse"         { return FIMSE; }
+"enquanto"      { return ENQUANTO; }
+"faca"          { return FACA; }
+"fimenquanto"   { return FIMENQUANTO; }
+
+">"             { return MAIOR; }
+"<"             { return MENOR; }
+"=="            { return IGUAL; }
+"!="            { return DIFERENTE; }
+">="            { return MAIG; }
+"<="            { return MENIG; }
 
 [0-9]+          { yylval.val = atoi(yytext); return NUM; }
-
-[a-zA-Z][a-zA-Z0-9_]* {
-    yylval.str = strdup(yytext);
-    return ID;
-}
+[a-zA-Z][a-zA-Z0-9_]* { yylval.str = strdup(yytext); return ID; }
 
 [ \t\r\n]+      ;
-
 .               { return yytext[0]; }
 
 %%

@@ -12,34 +12,10 @@ C_SOURCES = utils.c tree.c geracod.c main.c
 BISON_SOURCE = sintatico.y
 FLEX_SOURCE = lexico.l
 
-
 simples: $(C_SOURCES) $(BISON_SOURCE) $(FLEX_SOURCE)
-	@bison -v -d $(BISON_SOURCE) -o sintatico.c
-	@flex  -o lexico.c $(FLEX_SOURCE)
-	@gcc -I. lexico.c sintatico.c $(C_SOURCES) -o simples
-
-
-simples.exe: $(C_SOURCES) $(BISON_SOURCE) $(FLEX_SOURCE)
-	@bison -v -d $(BISON_SOURCE) -o sintatico.c
-	@flex  -o lexico.c $(FLEX_SOURCE)
-	@gcc -I. lexico.c sintatico.c $(C_SOURCES) -o simples.exe
-
-
-ifeq ($(OS),Windows_NT)
-    RM = del /F /Q
-else
-    RM = rm -f
-endif
+	bison -v -d $(BISON_SOURCE) -o sintatico.c
+	flex -o lexico.c $(FLEX_SOURCE)
+	gcc -I. lexico.c sintatico.c $(C_SOURCES) -o simples
 
 limpa:
-	@echo "Limpando..."
-	@$(RM) lexico.c
-	@$(RM) sintatico.c
-	@$(RM) sintatico.h
-	@$(RM) sintatico.output
-	@$(RM) simples
-	@$(RM) simples.exe
-	@$(RM) *.dot
-	@$(RM) *.svg
-	@$(RM) *.mvs
-
+	rm -f lexico.c sintatico.c sintatico.h sintatico.output simples simples.exe *.dot *.svg *.mvs
