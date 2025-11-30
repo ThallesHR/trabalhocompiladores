@@ -1,5 +1,0 @@
-programa dobro
-inicio
-leia(n);
-escreva(2 * n);
-fim
