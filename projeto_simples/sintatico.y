@@ -10,11 +10,13 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "tree.h"
 
 ptno raiz;
 
 extern int yylex();
+extern FILE *yyin;
 extern void erro(const char *msg); 
 void yyerror(const char *s);
 %}
@@ -25,7 +27,6 @@ void yyerror(const char *s);
     struct no *no;
 }
 
-/* --- TOKENS NOVOS ADICIONADOS AQUI --- */
 %token PROGRAMA INICIO FIM INTEIRO LEIA ESCREVA
 %token SE ENTAO SENAO FIMSE ENQUANTO FACA FIMENQUANTO
 %token MAIOR MENOR IGUAL DIFERENTE MAIG MENIG
@@ -39,7 +40,7 @@ void yyerror(const char *s);
 
 %%
 
-/* --- Regras da Gramática --- */
+/* REGRAS DA GRAMÁTICA: Definem a estrutura da linguagem e constroem a árvore sintática nó a nó. */
 
 programa:
     PROGRAMA ID declaracoes INICIO comandos FIM {
@@ -91,7 +92,6 @@ comando:
             adicionaFilho(n, $3);
             $$ = n;
       }
-    /* --- REGRAS DO SE e ENQUANTO QUE FALTAVAM --- */
     | SE condicao ENTAO comandos FIMSE {
             ptno n = criaNo(N_SE, 0);
             adicionaFilho(n, $2);
@@ -143,6 +143,63 @@ fator:
 
 %%
 
+/* Função de erro padrão do Bison, chamada quando a sintaxe está incorreta. */
 void yyerror(const char *s) {
     fprintf(stderr, "Erro sintatico: %s\n", s);
+}
+
+/* Função auxiliar para extrair o nome do arquivo sem a extensão. */
+void get_base_name(const char *full_path, char *base_name) {
+    const char *last_slash = strrchr(full_path, '/');
+    if (!last_slash) last_slash = strrchr(full_path, '\\');
+    const char *filename = last_slash ? last_slash + 1 : full_path;
+    char *dot = strrchr(filename, '.');
+    size_t length = dot ? (size_t)(dot - filename) : strlen(filename);
+    strncpy(base_name, filename, length);
+    base_name[length] = '\0';
+}
+
+/* MAIN: Ponto de entrada do compilador. Abre o arquivo, executa o parser e gera as saídas (.dot, .svg, .mvs). */
+int main(int argc, char **argv) {
+    char nome_base[256];
+    char cmd_dot[640]; 
+    char saida_dot[300], saida_mvs[300], saida_svg[300]; 
+
+    if (argc < 2) {
+        fprintf(stderr, "Uso: %s <arquivo_fonte.simples>\n", argv[0]);
+        return 1;
+    }
+
+    yyin = fopen(argv[1], "r");
+    if (yyin == NULL) {
+        fprintf(stderr, "Nao foi possivel abrir o arquivo %s\n", argv[1]);
+        return 1;
+    }
+
+    get_base_name(argv[1], nome_base);
+    snprintf(saida_dot, sizeof(saida_dot), "%s.dot", nome_base);
+    snprintf(saida_svg, sizeof(saida_svg), "%s.svg", nome_base);
+    snprintf(saida_mvs, sizeof(saida_mvs), "%s.mvs", nome_base);
+
+    if (yyparse() == 0) {
+        printf("Analise sintatica concluida.\n");
+
+        geraDot(raiz, saida_dot);
+        
+        sprintf(cmd_dot, "dot -Tsvg %s -o %s", saida_dot, saida_svg);
+        system(cmd_dot);
+        
+        FILE *f = fopen(saida_mvs, "w");
+        if (f) {
+            geracod(raiz, f);
+            fclose(f);
+            printf("Codigo MVS gerado em: %s\n", saida_mvs);
+        } else {
+            fprintf(stderr, "Erro ao criar arquivo MVS.\n");
+        }
+    } else {
+        printf("Erros durante a analise.\n");
+    }
+
+    return 0;
 }

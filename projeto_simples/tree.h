@@ -15,7 +15,7 @@
 
 #define MAXFILHOS 10
 
-// Lista de códigos para identificar o tipo de cada nó da árvore
+/* ENUM: Lista de códigos (etiquetas) para identificar o tipo de cada nó da árvore. */
 enum {
     N_PROGRAM,
     N_LISTA,
@@ -39,7 +39,7 @@ enum {
     N_NUM
 };
 
-// guarda o tipo do nó, seu valor/nome e os ponteiros para os filhos
+/* STRUCT: A estrutura de dados que representa um único nó da árvore na memória. */
 typedef struct no {
     int tipo;
     int valor;
@@ -48,16 +48,11 @@ typedef struct no {
     int nfilhos;
 } *ptno;
 
-// Cria um nó simples 
+/* Protótipos das funções implementadas em tree.c */
 ptno criaNo(int tipo, int valor);
-
-// Cria um nó que guarda texto 
 ptno criaNoStr(int tipo, const char *str);
-
-// Adiciona um nó filho a um nó pai 
 void adicionaFilho(ptno pai, ptno filho);
-
-// Gera o arquivo de texto (.dot) que será usado para desenhar o gráfico da árvore
 void geraDot(ptno raiz, const char *arquivo);
+void geracod(ptno raiz, FILE *f);
 
 #endif

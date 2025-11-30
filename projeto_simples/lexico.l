@@ -16,6 +16,9 @@
 
 %%
 
+    /* REGRAS: Mapeiam palavras do texto fonte para Tokens.
+       (O espaco antes deste comentario e obrigatorio no Flex) */
+
 "programa"      { return PROGRAMA; }
 "inicio"        { return INICIO; }
 "fim"           { return FIM; }
@@ -40,7 +43,7 @@
 [0-9]+          { yylval.val = atoi(yytext); return NUM; }
 [a-zA-Z][a-zA-Z0-9_]* { yylval.str = strdup(yytext); return ID; }
 
-[ \t\r\n]+      ;
+[ \t\r\n]+      ; 
 .               { return yytext[0]; }
 
 %%

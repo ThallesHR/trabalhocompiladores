@@ -8,7 +8,11 @@
 | Data . . . . . . : 20/11/2025
 +=============================================================*/
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
-void erro(const char *msg){
-  printf("Erro: %s\n", msg);
+/* Função genérica para exibir mensagens de erro fatal e encerrar o programa imediatamente. */
+void erro(const char *msg) {
+    fprintf(stderr, "Erro Fatal: %s\n", msg);
+    exit(1);
 }

@@ -8,14 +8,12 @@
 # Data . . . . . . : 20/11/2025
 #=============================================================
 
-C_SOURCES = utils.c tree.c geracod.c main.c
-BISON_SOURCE = sintatico.y
-FLEX_SOURCE = lexico.l
-
-simples: $(C_SOURCES) $(BISON_SOURCE) $(FLEX_SOURCE)
-	bison -v -d $(BISON_SOURCE) -o sintatico.c
-	flex -o lexico.c $(FLEX_SOURCE)
-	gcc -I. lexico.c sintatico.c $(C_SOURCES) -o simples
+simples: utils.c tree.c lexico.l sintatico.y
+	@echo "Compilando..."
+	@flex -o lexico.c lexico.l
+	@bison -v -d sintatico.y -o sintatico.c
+	@gcc lexico.c sintatico.c utils.c tree.c -o simples
 
 limpa:
-	rm -f lexico.c sintatico.c sintatico.h sintatico.output simples simples.exe *.dot *.svg *.mvs
+	@echo "Limpando..."
+	@rm -f lexico.c sintatico.c sintatico.h sintatico.output simples simples.exe *.dot *.svg *.mvs
